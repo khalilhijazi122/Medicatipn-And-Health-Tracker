@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/DashboardFragment">
+
+    <fragment
+        android:id="@+id/DashboardFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.DashbordFragment"
+        android:label="Dashboard">
+    </fragment>
+
+    <fragment
+        android:id="@+id/MedicationlistFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.MedicationListFragment"
+        android:label="Medication">
+    </fragment>
+
+    <fragment
+        android:id="@+id/HealthTrackerFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.HealthTrackerFragment"
+        android:label="Health">
+    </fragment>
+
+    <fragment
+        android:id="@+id/ReportFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.ReportFragment"
+        android:label="Report">
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/ProfileFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.ProfileFragment"
+        android:label="Profile">
+    </fragment>
+
+    <fragment
+        android:id="@+id/AddEditMedicationFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.AddEditMedicationListFragment"
+        android:label="AddingMedication">
+    </fragment>
+
+    <fragment
+        android:id="@+id/AddEditHealthFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.AddEditHealthFragment"
+        android:label="AddingHealth">
+    </fragment>
+
+    <fragment
+        android:id="@+id/SettingFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.settingFragment"
+        android:label="Setting">
+    </fragment>
+</navigation>
