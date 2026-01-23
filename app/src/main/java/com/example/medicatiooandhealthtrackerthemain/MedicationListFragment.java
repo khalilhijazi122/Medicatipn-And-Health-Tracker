@@ -21,7 +21,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class MedicationListFragment extends Fragment {
+public class MedicationListFragment extends Fragment implements ConfirmDeleteDialog.Listener{
+
 
     private AppDatabase db;
     private RecyclerView rv;
@@ -58,16 +59,20 @@ public class MedicationListFragment extends Fragment {
                         .navigate(R.id.AddEditMedicationListFragment, b);
             }
 
+
             @Override
             public void onDelete(Medication med) {
-                // لاحقاً
+                ConfirmDeleteDialog dialog = ConfirmDeleteDialog.newInstance(med.id);
+                dialog.show(getChildFragmentManager(), "confirmDelete");
             }
+
         });
 
 
 
 
-        rv.setAdapter(adapter);
+
+     rv.setAdapter(adapter);
 
         // Observe data
         db.medicationDao().getAllMedication().observe(getViewLifecycleOwner(),
@@ -85,6 +90,18 @@ public class MedicationListFragment extends Fragment {
                     .navigate(R.id.AddEditMedicationListFragment);
         });
 
-        return view;
+
+
+     return view;
     }
+    @Override
+    public void onConfirmDelete(int medId) {
+        new Thread(() -> db.medicationDao().deleteById(medId)).start();
+    }
+
 }
+
+
+
+
+

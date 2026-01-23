@@ -38,4 +38,7 @@ public interface MedicationDao {
 
     @Query("UPDATE medications SET isActive = :active WHERE id = :id")
     int setActive(int id, boolean active);
+
+    @Query("DELETE FROM medications WHERE id = :id")
+    void deleteById(int id);
 }
