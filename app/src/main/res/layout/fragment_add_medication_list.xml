@@ -1,14 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollAddEdit"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AddEditMedicationListFragment">
+    android:padding="16dp">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <!-- لازم ScrollView يكون عنده طفل واحد فقط -->
+    <LinearLayout
+        android:id="@+id/containerAddEdit"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add / Edit Medication"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingBottom="12dp" />
+
+        <!-- Medication Name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Medication Name" />
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g. Panadol"
+            android:inputType="textPersonName"
+            android:padding="10dp" />
+
+        <!-- Dosage -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dosage"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/etDosage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g. 500mg"
+            android:inputType="text"
+            android:padding="10dp" />
+
+        <!-- Time -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Time (Hour / Minute)"
+            android:layout_marginTop="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/etHour"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Hour (0-23)"
+                android:inputType="number"
+                android:padding="10dp" />
+
+            <Space
+                android:layout_width="12dp"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/etMinute"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Minute (0-59)"
+                android:inputType="number"
+                android:padding="10dp" />
+        </LinearLayout>
+
+        <!-- Frequency per day -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Frequency Per Day"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/etFrequency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g. 2"
+            android:inputType="number"
+            android:padding="10dp" />
+
+        <!-- Active -->
+        <CheckBox
+            android:id="@+id/cbActive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Active medication"
+            android:layout_marginTop="12dp"
+            android:checked="true" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:layout_marginTop="18dp" />
+
+    </LinearLayout>
+
+</ScrollView>

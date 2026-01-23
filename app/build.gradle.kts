@@ -37,6 +37,9 @@ dependencies {
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.navigation.ui)
+    implementation(libs.google.material)
+    implementation(libs.firebase.inappmessaging)
+    //implementation(libs.play.services.ads.api)
     val roomVersion = "2.8.4"
 
     implementation(libs.androidx.room.runtime)

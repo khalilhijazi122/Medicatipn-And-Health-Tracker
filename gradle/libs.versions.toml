@@ -11,6 +11,9 @@ roomVersion = "2.8.4"
 navigationFragment = "2.9.6"
 firebaseFirestore = "26.1.0"
 navigationUi = "2.9.6"
+materialVersion = "1.13.0"
+firebaseInappmessaging = "22.0.2"
+playServicesAdsApi = "24.9.0"
 
 [libraries]
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
@@ -31,6 +34,9 @@ room-paging = { module = "androidx.room:room-paging", version.ref = "roomVersion
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
+google-material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
+firebase-inappmessaging = { group = "com.google.firebase", name = "firebase-inappmessaging", version.ref = "firebaseInappmessaging" }
+play-services-ads-api = { group = "com.google.android.gms", name = "play-services-ads-api", version.ref = "playServicesAdsApi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

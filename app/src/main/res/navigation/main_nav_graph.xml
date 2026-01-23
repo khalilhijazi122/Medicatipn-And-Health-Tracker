@@ -6,50 +6,62 @@
 
     <fragment
         android:id="@+id/DashboardFragment"
-        android:name="com.example.medicatiooandhealthtrackerthemain.DashbordFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.DashboardFragment"
         android:label="Dashboard">
+    <action
+        android:id="@+id/action_medicationListFragment_to_addEditMedicationFragment"
+        app:destination="@id/AddEditMedicationListFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/MedicationlistFragment"
-        android:name="com.example.medicatiooandhealthtrackerthemain.MedicationListFragment"
-        android:label="Medication">
+        android:id="@+id/AddEditMedicationListFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.AddEditMedicationListFragment"
+        android:label="AddMedication">
+
     </fragment>
+
+
+
+    <fragment
+        android:id="@+id/MedicationListFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.MedicationListFragment"
+        android:label="Medication"/>
+
 
     <fragment
         android:id="@+id/HealthTrackerFragment"
         android:name="com.example.medicatiooandhealthtrackerthemain.HealthTrackerFragment"
-        android:label="Health">
-    </fragment>
+        android:label="Health"/>
+
 
     <fragment
         android:id="@+id/ReportFragment"
         android:name="com.example.medicatiooandhealthtrackerthemain.ReportFragment"
-        android:label="Report">
-    </fragment>
+        android:label="Report"/>
+
 
 
     <fragment
         android:id="@+id/ProfileFragment"
         android:name="com.example.medicatiooandhealthtrackerthemain.ProfileFragment"
-        android:label="Profile">
-    </fragment>
+        android:label="Profile"/>
+
 
     <fragment
         android:id="@+id/AddEditMedicationFragment"
         android:name="com.example.medicatiooandhealthtrackerthemain.AddEditMedicationListFragment"
-        android:label="AddingMedication">
-    </fragment>
+        android:label="AddingMedication"/>
+
 
     <fragment
         android:id="@+id/AddEditHealthFragment"
         android:name="com.example.medicatiooandhealthtrackerthemain.AddEditHealthFragment"
-        android:label="AddingHealth">
-    </fragment>
+        android:label="AddingHealth"/>
+
 
     <fragment
         android:id="@+id/SettingFragment"
         android:name="com.example.medicatiooandhealthtrackerthemain.settingFragment"
-        android:label="Setting">
-    </fragment>
+        android:label="Setting"/>
+
 </navigation>
