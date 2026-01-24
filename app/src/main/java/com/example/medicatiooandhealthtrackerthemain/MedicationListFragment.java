@@ -1,5 +1,7 @@
 package com.example.medicatiooandhealthtrackerthemain;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +9,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
@@ -22,6 +27,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
 
 public class MedicationListFragment extends Fragment implements ConfirmDeleteDialog.Listener{
+
 
 
     private AppDatabase db;
@@ -43,11 +49,11 @@ public class MedicationListFragment extends Fragment implements ConfirmDeleteDia
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         // DB
-        db = Room.databaseBuilder(requireContext(),
-                        AppDatabase.class,
-                        "medication_db"
-                ).allowMainThreadQueries() // (مؤقتاً للتعلم فقط)
+        db = Room.databaseBuilder(requireContext(), AppDatabase.class, "medication_db")
+                .fallbackToDestructiveMigration()
+                .allowMainThreadQueries() // مؤقتاً للتعلم
                 .build();
+
 
         // Adapter with click listener for Edit
         adapter = new MedicationAdapter(new MedicationAdapter.OnMedicationClick() {
@@ -74,20 +80,16 @@ public class MedicationListFragment extends Fragment implements ConfirmDeleteDia
 
      rv.setAdapter(adapter);
 
-        // Observe data
-        db.medicationDao().getAllMedication().observe(getViewLifecycleOwner(),
-                new Observer<List<Medication>>() {
-                    @Override
-                    public void onChanged(List<Medication> medications) {
-                        adapter.setItems(medications);
+        db.medicationDao().getActiveMedicationsLive(1)
+                .observe(getViewLifecycleOwner(), meds -> adapter.setItems(meds));
 
-                    }
-                });
 
         // FAB -> ADD (no bundle)
         fabAdd.setOnClickListener(v -> {
             NavHostFragment.findNavController(MedicationListFragment.this)
                     .navigate(R.id.AddEditMedicationListFragment);
+
+
         });
 
 

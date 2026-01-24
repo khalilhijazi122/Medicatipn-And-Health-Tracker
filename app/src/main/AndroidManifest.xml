@@ -11,6 +11,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MedicatiooAndHealthTrackertheMain">
+
+
+
         <activity
             android:name=".AuthActivity"
             android:exported="true">
@@ -29,6 +32,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
 
     </application>
 

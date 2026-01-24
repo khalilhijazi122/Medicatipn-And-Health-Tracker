@@ -57,8 +57,10 @@ public class AddEditMedicationListFragment extends Fragment {
 
         // DB (basic)
         db = Room.databaseBuilder(requireContext(), AppDatabase.class, "medication_db")
-                .allowMainThreadQueries() // للتعلم فقط
+                .fallbackToDestructiveMigration()
+                .allowMainThreadQueries() // مؤقتاً للتعلم
                 .build();
+
 
         // Check bundle
         Bundle args = getArguments();

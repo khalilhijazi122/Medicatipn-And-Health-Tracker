@@ -41,4 +41,13 @@ public interface MedicationDao {
 
     @Query("DELETE FROM medications WHERE id = :id")
     void deleteById(int id);
+
+    @Query("SELECT * FROM medications WHERE userId = :userId AND isActive = 1 ORDER BY hour, minute")
+    LiveData<List<Medication>> getActiveMedicationsLive(int userId);
+
+    @Query("SELECT * FROM medications WHERE userId = :userId AND isActive = 1")
+    List<Medication> getActiveMedications(int userId);
+
+    @Query("UPDATE medications SET isActive = 0 WHERE id = :medId")
+    int setInactive(int medId);
 }

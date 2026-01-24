@@ -17,7 +17,7 @@ import com.example.medicatiooandhealthtrackerthemain.data.local.entities.User;
 
 @Database(
         entities = {User.class, Medication.class, MedicationLog.class, HealthRecord.class},
-        version = 1,
+        version = 3,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {

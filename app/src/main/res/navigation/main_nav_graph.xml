@@ -29,9 +29,9 @@
 
 
     <fragment
-        android:id="@+id/HealthTrackerFragment"
-        android:name="com.example.medicatiooandhealthtrackerthemain.HealthTrackerFragment"
-        android:label="Health"/>
+        android:id="@+id/MedicationLogFragment"
+        android:name="com.example.medicatiooandhealthtrackerthemain.MedicationLogFragment"
+        android:label="Log"/>
 
 
     <fragment
@@ -47,16 +47,8 @@
         android:label="Profile"/>
 
 
-    <fragment
-        android:id="@+id/AddEditMedicationFragment"
-        android:name="com.example.medicatiooandhealthtrackerthemain.AddEditMedicationListFragment"
-        android:label="AddingMedication"/>
 
 
-    <fragment
-        android:id="@+id/AddEditHealthFragment"
-        android:name="com.example.medicatiooandhealthtrackerthemain.AddEditHealthFragment"
-        android:label="AddingHealth"/>
 
 
     <fragment
