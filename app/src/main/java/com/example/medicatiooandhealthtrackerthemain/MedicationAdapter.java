@@ -9,7 +9,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.medicatiooandhealthtrackerthemain.R;
 import com.example.medicatiooandhealthtrackerthemain.data.local.entities.Medication;
 import com.google.android.material.chip.Chip;
 
@@ -33,8 +32,8 @@ public class MedicationAdapter extends RecyclerView.Adapter<MedicationAdapter.Me
         this.listener = listener;
     }
 
-    public void setItems(List<Medication> newItems) {
-        items = (newItems == null) ? new ArrayList<>() : newItems;
+    public void setItems(Object newItems) {
+        items = (newItems == null) ? new ArrayList<>() :  (List<Medication>) newItems;
         notifyDataSetChanged();
     }
 

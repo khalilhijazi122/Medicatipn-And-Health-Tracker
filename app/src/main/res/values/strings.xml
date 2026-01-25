@@ -2,4 +2,10 @@
     <string name="app_name">Medicatioo And Health Tracker(the main)</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="reports">Health Reports</string>
+    <string name="medication_adherence">Medication Adherence</string>
+    <string name="adherence_rate">%d%% adherence</string>
+    <string name="taken_doses">Taken: %d doses</string>
+    <string name="missed_doses">Missed: %d doses</string>
 </resources>

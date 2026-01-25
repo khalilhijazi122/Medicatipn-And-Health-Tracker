@@ -80,7 +80,7 @@ public class MedicationListFragment extends Fragment implements ConfirmDeleteDia
 
      rv.setAdapter(adapter);
 
-        db.medicationDao().getActiveMedicationsLive(1)
+        db.medicationDao().getActiveMedications(String.valueOf(1))
                 .observe(getViewLifecycleOwner(), meds -> adapter.setItems(meds));
 
 

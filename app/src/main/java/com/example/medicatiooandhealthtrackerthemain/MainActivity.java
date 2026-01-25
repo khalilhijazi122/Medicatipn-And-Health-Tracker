@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 Executors.newSingleThreadExecutor().execute(() -> {
-                    checkDueMedications(db, USER_ID);
+                    checkDueMedications(db, String.valueOf(USER_ID));
                 });
                 handler.postDelayed(this, 30_000); // كل 30 ثانية
             }
@@ -97,8 +97,8 @@ public class MainActivity extends AppCompatActivity {
         if (checkerRunnable != null) handler.removeCallbacks(checkerRunnable);
     }
 
-    private void checkDueMedications(AppDatabase db, int userId) {
-        List<Medication> meds = db.medicationDao().getActiveMedications(userId);
+    private void checkDueMedications(AppDatabase db, String userId) {
+        List<Medication> meds = db.medicationDao().getActiveMedicationsSync(userId);
 
         Calendar now = Calendar.getInstance();
         int h = now.get(Calendar.HOUR_OF_DAY);
@@ -110,11 +110,11 @@ public class MainActivity extends AppCompatActivity {
         for (Medication med : meds) {
             if (med.hour == h && med.minute == m) {
 
-                int already = db.medicationLogDao().countPendingToday(userId, med.id, startDay, endDay);
+                int already = db.medicationLogDao().countPendingToday(Integer.parseInt(userId), med.id, startDay, endDay);
                 if (already > 0) continue;
 
                 MedicationLog log = new MedicationLog();
-                log.userId = userId;
+                log.userId = Integer.parseInt(userId);
                 log.medicationId = med.id;
                 log.timestamp = System.currentTimeMillis();
                 log.status = "PENDING";

@@ -2,4 +2,38 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary Colors -->
+    <color name="primary">#4A90E2</color>
+    <color name="primary_dark">#3A7BC8</color>
+    <color name="primary_light">#7AB5F5</color>
+    <color name="accent">#67C4A7</color>
+    <color name="accent_dark">#4FAA8E</color>
+
+    <!-- Background -->
+    <color name="background">#F5F5F5</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+
+    <!-- Text -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+    <color name="text_white">#FFFFFF</color>
+
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
+    <color name="error">#F44336</color>
+    <color name="info">#2196F3</color>
+
+    <!-- Medication Status -->
+    <color name="taken">#4CAF50</color>
+    <color name="pending">#FF9800</color>
+    <color name="missed">#F44336</color>
+    <color name="skipped">#9E9E9E</color>
+
+    <!-- UI Elements -->
+    <color name="divider">#E0E0E0</color>
+    <color name="ripple">#20000000</color>
 </resources>

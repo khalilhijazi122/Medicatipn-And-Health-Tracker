@@ -29,4 +29,100 @@ public class HealthRecord {
     public String unit;
 
     public long timestamp;
+    private String description;
+    private String severity; // "Mild", "Moderate", "Severe"
+
+    public long getId() {
+        return id;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    // ✅ Symptom getters (needed by SymptomAdapter)
+    public String getDescription() {
+        return description;
+    }
+
+    public String getSeverity() {
+        return severity;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
+
+    // Vital sign setters
+    public void setVitalType(String type) {
+        this.type = type;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Check if this is a symptom record
+     */
+    public boolean isSymptom() {
+        return "SYMPTOM".equals(type);
+    }
+
+    /**
+     * Check if this is a vital sign record
+     */
+    public boolean isVitalSign() {
+        return "VITAL_SIGN".equals(type);
+    }
+
+
+
+
 }

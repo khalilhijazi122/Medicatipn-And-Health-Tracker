@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Left side: Date and Description -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Date -->
+        <TextView
+            android:id="@+id/tvSymptomDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jan 18"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:fontFamily="sans-serif"/>
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/tvSymptomDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Headache"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginTop="2dp"/>
+    </LinearLayout>
+
+    <!-- Right side: Severity Badge -->
+    <TextView
+        android:id="@+id/tvSeverity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mild"
+        android:textSize="12sp"
+        android:textColor="@color/text_white"
+        android:background="@drawable/bg_severity_mild"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:layout_marginStart="8dp"/>
+
+</LinearLayout>

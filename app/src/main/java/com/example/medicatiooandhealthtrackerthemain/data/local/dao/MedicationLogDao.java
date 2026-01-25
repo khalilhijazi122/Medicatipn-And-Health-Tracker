@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.example.medicatiooandhealthtrackerthemain.data.local.entities.MedicationLog;
 import com.example.medicatiooandhealthtrackerthemain.data.local.entities.PendingLogItem;
@@ -15,6 +16,11 @@ public interface MedicationLogDao {
 
     @Insert
     long insert(MedicationLog log);
+
+    @Update
+    default long update(MedicationLog log) {
+        return 0;
+    }
 
     // LiveData لعرض كل logs في RecyclerView
     @Query("SELECT * FROM medication_logs WHERE userId = :userId ORDER BY timestamp DESC")
@@ -54,4 +60,25 @@ public interface MedicationLogDao {
             "WHERE userId = :userId AND medicationId = :medId AND status = 'PENDING' " +
             "AND timestamp BETWEEN :startDay AND :endDay")
     int countPendingToday(int userId, int medId, long startDay, long endDay);
+    @Query("SELECT COUNT(*) FROM medication_logs WHERE userId = :userId " +
+            "AND timestamp BETWEEN :startTime AND :endTime " +
+            "AND status = 'TAKEN'")
+    LiveData<Integer> getTakenCount(String userId, long startTime, long endTime);
+
+    @Query("SELECT COUNT(*) FROM medication_logs WHERE userId = :userId " +
+            "AND timestamp BETWEEN :startTime AND :endTime " +
+            "AND status = 'MISSED'")
+    LiveData<Integer> getMissedCount(String userId, long startTime, long endTime);
+
+    @Query("SELECT * FROM medication_logs WHERE userId = :userId AND DATE(timestamp/1000, 'unixepoch') = DATE(:date/1000, 'unixepoch')")
+    LiveData<List<MedicationLog>> getLogsForDate(String userId, long date);
+
+    @Query("SELECT * FROM medication_logs WHERE medicationId = :medicationId ORDER BY timestamp DESC")
+    LiveData<List<MedicationLog>> getLogsForMedication(String medicationId);
+
+    @Query("SELECT * FROM medication_logs WHERE userId = :userId " +
+            "AND timestamp BETWEEN :startTime AND :endTime")
+    LiveData<List<MedicationLog>> getLogsInRange(String userId, long startTime, long endTime);
+
+
 }
