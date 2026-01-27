@@ -1,5 +1,6 @@
 package com.example.medicatiooandhealthtrackerthemain;
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -10,6 +11,7 @@ import com.example.medicatiooandhealthtrackerthemain.data.local.entities.HealthR
 import com.example.medicatiooandhealthtrackerthemain.data.local.repository.HealthRepository;
 import com.example.medicatiooandhealthtrackerthemain.data.local.repository.MedicationRepository;
 
+import java.util.Date;
 import java.util.List;
 
 public class ReportsViewModel extends AndroidViewModel {
@@ -23,8 +25,7 @@ public class ReportsViewModel extends AndroidViewModel {
         medicationRepository = new MedicationRepository(application);
         healthRepository = new HealthRepository(application);
 
-        // TODO: Get actual user ID from session/preferences
-        currentUserId = "user123";
+        currentUserId = "1";
     }
 
     /**
@@ -32,7 +33,9 @@ public class ReportsViewModel extends AndroidViewModel {
      */
     public LiveData<AdherenceData> getAdherenceData(long startTime, long endTime) {
         MediatorLiveData<AdherenceData> result = new MediatorLiveData<>();
-
+        Log.d("ReportsViewModel", "Getting adherence for userId: " + currentUserId);
+        Log.d("ReportsViewModel", "Start: " + new Date(startTime));
+        Log.d("ReportsViewModel", "End: " + new Date(endTime));
         // Get taken count
         LiveData<Integer> takenCount = medicationRepository.getTakenCount(currentUserId, startTime, endTime);
 
@@ -41,6 +44,7 @@ public class ReportsViewModel extends AndroidViewModel {
 
         // Combine both counts
         result.addSource(takenCount, taken -> {
+            Log.d("ReportsViewModel", "Taken count: " + taken);
             Integer missed = missedCount.getValue();
             if (missed != null) {
                 result.setValue(new AdherenceData(taken, missed));
@@ -48,6 +52,7 @@ public class ReportsViewModel extends AndroidViewModel {
         });
 
         result.addSource(missedCount, missed -> {
+            Log.d("ReportsViewModel", "Missed count: " + missed);
             Integer taken = takenCount.getValue();
             if (taken != null) {
                 result.setValue(new AdherenceData(taken, missed));

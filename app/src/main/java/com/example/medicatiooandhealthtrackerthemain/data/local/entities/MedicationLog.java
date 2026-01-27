@@ -31,7 +31,7 @@ public class MedicationLog {
     @PrimaryKey(autoGenerate = true)
     public int id;
 
-    public int userId;
+    public String userId;
     public int medicationId;
 
     // وقت الضغط (TAKEN أو MISSED)

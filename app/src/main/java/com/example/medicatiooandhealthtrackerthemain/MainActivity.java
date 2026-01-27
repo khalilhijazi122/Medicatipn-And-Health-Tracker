@@ -110,11 +110,11 @@ public class MainActivity extends AppCompatActivity {
         for (Medication med : meds) {
             if (med.hour == h && med.minute == m) {
 
-                int already = db.medicationLogDao().countPendingToday(Integer.parseInt(userId), med.id, startDay, endDay);
+                int already = db.medicationLogDao().countPendingToday(userId, med.id, startDay, endDay);
                 if (already > 0) continue;
 
                 MedicationLog log = new MedicationLog();
-                log.userId = Integer.parseInt(userId);
+                log.userId = userId;
                 log.medicationId = med.id;
                 log.timestamp = System.currentTimeMillis();
                 log.status = "PENDING";

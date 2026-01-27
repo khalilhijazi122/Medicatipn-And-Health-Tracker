@@ -1,6 +1,7 @@
 package com.example.medicatiooandhealthtrackerthemain;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,12 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.medicatiooandhealthtrackerthemain.data.local.AppDatabase;
+import com.example.medicatiooandhealthtrackerthemain.data.local.entities.MedicationLog;
+
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class ReportFragment extends Fragment {
 
@@ -130,10 +136,45 @@ public class ReportFragment extends Fragment {
             default: // All time
                 startTime = 0;
         }
+        Log.d("DEBUG_REPORTS", "=== DEBUGGING ADHERENCE ===");
+        Log.d("DEBUG_REPORTS", "Time range: " + new Date(startTime) + " to " + new Date(endTime));
+
+        // Check what's actually in the database
+        new Thread(() -> {
+            AppDatabase db = AppDatabase.getInstance(requireContext());
+
+            // Get ALL medication logs (no filter)
+            List<MedicationLog> allLogs = db.medicationLogDao().getAllLogsSync();
+
+            Log.d("DEBUG_REPORTS", "Total logs in database: " + allLogs.size());
+
+            if (allLogs.size() > 0) {
+                for (int i = 0; i < Math.min(5, allLogs.size()); i++) {
+                    MedicationLog log = allLogs.get(i);
+                    Log.d("DEBUG_REPORTS", "Log #" + i + ": " +
+                            "userId='" + log.userId + "', " +
+                            "medicationId=" + log.medicationId + ", " +
+                            "status='" + log.status + "', " +
+                            "timestamp=" + new Date(log.timestamp));
+                }
+            } else {
+                Log.d("DEBUG_REPORTS", "⚠️ NO LOGS IN DATABASE!");
+            }
+
+            // Check counts for current user
+            String currentUser = "1"; // Match what you use in ViewModel
+            int takenSync = db.medicationLogDao().getTakenCountSync(currentUser, startTime, endTime);
+            int missedSync = db.medicationLogDao().getMissedCountSync(currentUser, startTime, endTime);
+
+            Log.d("DEBUG_REPORTS", "Taken count (sync): " + takenSync);
+            Log.d("DEBUG_REPORTS", "Missed count (sync): " + missedSync);
+
+        }).start();
 
         // Observe adherence data
         viewModel.getAdherenceData(startTime, endTime).observe(getViewLifecycleOwner(), data -> {
             if (data != null) {
+                Log.d("DEBUG_REPORTS", "LiveData - Taken: " + data.getTakenCount() + ", Missed: " + data.getMissedCount());
                 updateAdherenceUI(data);
             }
         });

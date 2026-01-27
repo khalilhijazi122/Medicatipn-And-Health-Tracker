@@ -21,7 +21,7 @@ public class Medication {
     @PrimaryKey(autoGenerate = true)
     public int id;
 
-    public int userId;
+    public String userId;
 
     public String name;
     public String dosage;
