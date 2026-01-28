@@ -49,10 +49,12 @@ public class MedicationListFragment extends Fragment implements ConfirmDeleteDia
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         // DB
-        db = Room.databaseBuilder(requireContext(), AppDatabase.class, "medication_db")
-                .fallbackToDestructiveMigration()
-                .allowMainThreadQueries() // مؤقتاً للتعلم
-                .build();
+//        db = Room.databaseBuilder(requireContext(), AppDatabase.class, "medication_db")
+//                .fallbackToDestructiveMigration()
+//                .allowMainThreadQueries() // مؤقتاً للتعلم
+//                .build();
+
+        db = AppDatabase.getInstance(requireContext());
 
 
         // Adapter with click listener for Edit

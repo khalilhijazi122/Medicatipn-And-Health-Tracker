@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui)
     implementation(libs.google.material)
     implementation(libs.firebase.inappmessaging)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     //implementation(libs.play.services.ads.api)
     val roomVersion = "2.8.4"
 

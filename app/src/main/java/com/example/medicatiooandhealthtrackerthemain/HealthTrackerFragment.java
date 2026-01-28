@@ -1,64 +1,123 @@
 package com.example.medicatiooandhealthtrackerthemain;
 
+import android.graphics.Color;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HealthTrackerFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.medicatiooandhealthtrackerthemain.data.local.AppDatabase;
+import com.example.medicatiooandhealthtrackerthemain.data.local.entities.HealthRecord;
+import com.example.medicatiooandhealthtrackerthemain.utils.SessionManager;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+
 public class HealthTrackerFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public HealthTrackerFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HealthTrackerFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HealthTrackerFragment newInstance(String param1, String param2) {
-        HealthTrackerFragment fragment = new HealthTrackerFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private AppDatabase db;
+    private SessionManager sessionManager;
+    private HealthAdapter adapter;
+    private LineChart healthChart;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_health_tracker, container, false);
+
+        // 1. إعداد العناصر
+        healthChart = view.findViewById(R.id.healthChart);
+        RecyclerView rv = view.findViewById(R.id.rvHealthHistory);
+        FloatingActionButton fab = view.findViewById(R.id.fabAddHealth);
+
+        rv.setLayoutManager(new LinearLayoutManager(getContext()));
+        db = AppDatabase.getInstance(requireContext());
+        sessionManager = new SessionManager(requireContext());
+
+        fab.setOnClickListener(v -> {
+            Navigation.findNavController(view).navigate(R.id.action_healthTracker_to_addEditHealth);
+        });
+
+        // 2. مراقبة البيانات وتحديث القائمة والشارت معاً
+        db.healthRecordDao().getAll(sessionManager.getUserId()).observe(getViewLifecycleOwner(), records -> {
+            if (records != null && !records.isEmpty()) {
+                // تحديث القائمة
+                adapter = new HealthAdapter(records);
+                rv.setAdapter(adapter);
+
+                // تحديث الشارت بجميع الأنواع
+                updateMultiChart(records);
+            }
+        });
+
+        return view;
+    }
+
+    private void updateMultiChart(List<HealthRecord> allRecords) {
+        if (allRecords == null || allRecords.isEmpty()) return;
+
+        // 1. ترتيب البيانات زمنياً
+        Collections.sort(allRecords, (a, b) -> Long.compare(a.timestamp, b.timestamp));
+
+        // 2. استخدام Map لتجميع البيانات حسب النوع تلقائياً
+        // المفتاح (Key) هو اسم النوع، والقيمة (Value) هي قائمة النقاط للشارت
+        HashMap<String, List<Entry>> dataMap = new HashMap<>();
+
+        for (HealthRecord record : allRecords) {
+            String type = record.type;
+            if (!dataMap.containsKey(type)) {
+                dataMap.put(type, new ArrayList<>());
+            }
+            dataMap.get(type).add(new Entry(record.timestamp, (float) record.value));
         }
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_health_tracker, container, false);
+        // 3. إنشاء DataSets لكل نوع موجود في القائمة
+        LineData lineData = new LineData();
+        int[] colors = {Color.MAGENTA, Color.BLUE, Color.RED, Color.GREEN, Color.CYAN, Color.YELLOW};
+        int colorIndex = 0;
+
+        for (String type : dataMap.keySet()) {
+            LineDataSet dataSet = new LineDataSet(dataMap.get(type), type);
+
+            // اختيار لون مختلف لكل خط
+            int color = colors[colorIndex % colors.length];
+            dataSet.setColor(color);
+            dataSet.setCircleColor(color);
+            dataSet.setLineWidth(2f);
+            dataSet.setCircleRadius(4f);
+
+            lineData.addDataSet(dataSet);
+            colorIndex++;
+        }
+
+        // 4. إعدادات المحور الأفقي (التوقيت)
+        healthChart.getXAxis().setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM HH:mm", Locale.getDefault());
+                return sdf.format(new Date((long) value));
+            }
+        });
+
+        // تحسينات تقنية للشارت
+        healthChart.setData(lineData);
+        healthChart.getXAxis().setLabelRotationAngle(-45); // تدوير الوقت لكي لا تتداخل النصوص
+        healthChart.getDescription().setText("Health Trends Overview");
+        healthChart.animateX(1000);
+        healthChart.invalidate(); // تحديث الرسم
     }
 }

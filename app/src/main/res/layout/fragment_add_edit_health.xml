@@ -1,14 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AddEditHealthFragment">
+    android:orientation="vertical"
+    android:padding="20dp">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Health Record"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:paddingBottom="20dp"/>
 
-</FrameLayout>
+    <Spinner
+        android:id="@+id/spinnerType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/health_types"
+        android:padding="10dp"/>
+
+    <EditText
+        android:id="@+id/etValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Value (e.g. 120)"
+        android:inputType="numberDecimal"
+        android:layout_marginTop="15dp"/>
+
+    <EditText
+        android:id="@+id/etNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Symptoms or Notes"
+        android:layout_marginTop="15dp"/>
+
+    <Button
+        android:id="@+id/btnSaveHealth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SAVE RECORD"
+        android:layout_marginTop="30dp"/>
+</LinearLayout>

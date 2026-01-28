@@ -1,64 +1,126 @@
 package com.example.medicatiooandhealthtrackerthemain;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link DashboardFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.example.medicatiooandhealthtrackerthemain.data.local.AppDatabase;
+import com.example.medicatiooandhealthtrackerthemain.data.local.entities.Medication;
+import com.example.medicatiooandhealthtrackerthemain.data.local.entities.User;
+import com.example.medicatiooandhealthtrackerthemain.utils.SessionManager;
+
+import java.util.List;
+
 public class DashboardFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public DashboardFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment DashbordFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static DashboardFragment newInstance(String param1, String param2) {
-        DashboardFragment fragment = new DashboardFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    TextView tvWelcome, tvMedicationCount, tvHealthCount, tvNextDose;
+    AppDatabase db;
+    SessionManager sessionManager;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        View view = inflater.inflate(R.layout.fragment_dashbord, container, false);
+
+        // 1. ربط العناصر من الـ XML
+        View healthSection = view.findViewById(R.id.layoutHealthSection);
+        Button btnGoToHealth = view.findViewById(R.id.btnGoToHealth);
+        tvWelcome = view.findViewById(R.id.tvWelcome);
+        tvMedicationCount = view.findViewById(R.id.tvMedicationCount);
+        tvHealthCount = view.findViewById(R.id.tvHealthCount);
+        tvNextDose = view.findViewById(R.id.tvNextDose);
+
+        // 2. تجهيز الداتابيز والـ Session
+        sessionManager = new SessionManager(requireContext());
+        db = AppDatabase.getInstance(requireContext());
+
+        // 3. برمجة أكشن الضغط (داخل onCreateView)
+        View.OnClickListener openHealthAction = v -> {
+            androidx.navigation.Navigation.findNavController(v)
+                    .navigate(R.id.action_dashboardFragment_to_healthTrackerFragment);
+        };
+
+        // تفعيل الضغط على الكرت وعلى الزر
+        if (healthSection != null) healthSection.setOnClickListener(openHealthAction);
+        if (btnGoToHealth != null) btnGoToHealth.setOnClickListener(openHealthAction);
+
+        // 4. تحميل البيانات
+        loadDashboardData();
+
+        return view; // سطر الـ return يجب أن يكون الأخير دائماً
+    }
+
+    private void loadDashboardData() {
+        int userId = sessionManager.getUserId();
+
+        // 1. مراقبة عدد السجلات الصحية (Health Records)
+        db.healthRecordDao().getCount(userId).observe(getViewLifecycleOwner(), count -> {
+            if (isAdded() && count != null) {
+                tvHealthCount.setText(count + " records");
+            }
+        });
+
+        // 2. مراقبة الأدوية وحساب الموعد القادم
+        db.medicationDao().getAllByUser(userId).observe(getViewLifecycleOwner(), meds -> {
+            if (isAdded() && meds != null) {
+                tvMedicationCount.setText(meds.size() + " medications");
+
+                if (meds.isEmpty()) {
+                    tvNextDose.setText("No medications added");
+                } else {
+                    updateNextDoseUI(meds);
+                }
+            }
+        });
+
+        // 3. جلب بيانات المستخدم للترحيب
+        new Thread(() -> {
+            User user = db.userDao().findById(userId);
+            if (getActivity() != null) {
+                requireActivity().runOnUiThread(() -> {
+                    if (isAdded() && user != null) {
+                        tvWelcome.setText("Welcome, " + user.name);
+                    }
+                });
+            }
+        }).start();
+    }
+
+    // دالة لحساب أقرب موعد دواء
+    private void updateNextDoseUI(List<Medication> meds) {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int currentHour = now.get(java.util.Calendar.HOUR_OF_DAY);
+        int currentMinute = now.get(java.util.Calendar.MINUTE);
+
+        Medication nextMed = null;
+
+        for (Medication m : meds) {
+            if (m.isActive) {
+                if (m.hour > currentHour || (m.hour == currentHour && m.minute > currentMinute)) {
+                    nextMed = m;
+                    break;
+                }
+            }
+        }
+
+        if (nextMed != null) {
+            tvNextDose.setText("Next: " + nextMed.name + " at " + formatTime(nextMed.hour, nextMed.minute));
+        } else if (!meds.isEmpty()) {
+            Medication tomorrowMed = meds.get(0);
+            tvNextDose.setText("Tomorrow: " + tomorrowMed.name + " at " + formatTime(tomorrowMed.hour, tomorrowMed.minute));
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_dashbord, container, false);
+
+    private String formatTime(int hour, int minute) {
+        return String.format("%02d:%02d", hour, minute);
     }
 }

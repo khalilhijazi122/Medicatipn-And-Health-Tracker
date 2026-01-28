@@ -10,4 +10,5 @@ public class PendingLogItem {
     public int minute;
 
     public long timestamp; // وقت إنشاء الـ pending
+    public String status;
 }

@@ -21,4 +21,6 @@ public interface UserDao {
 
     @Query("SELECT * FROM users WHERE id = :id LIMIT 1")
     User findById(int id);
+
+
 }

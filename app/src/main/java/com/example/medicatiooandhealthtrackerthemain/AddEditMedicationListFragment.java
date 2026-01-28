@@ -35,6 +35,7 @@ public class AddEditMedicationListFragment extends Fragment {
 
     private boolean isEdit = false;
     private int editMedId = -1;
+    private com.example.medicatiooandhealthtrackerthemain.utils.SessionManager sessionManager;
 
     public AddEditMedicationListFragment() { }
 
@@ -44,7 +45,7 @@ public class AddEditMedicationListFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_add_medication_list, container, false);
-
+        sessionManager = new com.example.medicatiooandhealthtrackerthemain.utils.SessionManager(requireContext());
         // Bind views
         tvTitle = view.findViewById(R.id.tvTitle);
         etName = view.findViewById(R.id.etName);
@@ -56,10 +57,11 @@ public class AddEditMedicationListFragment extends Fragment {
         btnSave = view.findViewById(R.id.btnSave);
 
         // DB (basic)
-        db = Room.databaseBuilder(requireContext(), AppDatabase.class, "medication_db")
-                .fallbackToDestructiveMigration()
-                .allowMainThreadQueries() // مؤقتاً للتعلم
-                .build();
+//        db = Room.databaseBuilder(requireContext(), AppDatabase.class, "medication_db")
+//                .fallbackToDestructiveMigration()
+//                .allowMainThreadQueries() // مؤقتاً للتعلم
+//                .build();
+        db = AppDatabase.getInstance(requireContext());
 
 
         // Check bundle
@@ -141,7 +143,7 @@ public class AddEditMedicationListFragment extends Fragment {
                 db.medicationDao().update(med);
 
             } else {
-                med.userId = 1; // مؤقتاً
+                med.userId = sessionManager.getUserId(); // ✅ استخدم الديناميكي
                 db.medicationDao().insert(med);
             }
 

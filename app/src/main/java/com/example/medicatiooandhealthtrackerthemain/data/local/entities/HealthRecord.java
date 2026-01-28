@@ -27,6 +27,7 @@ public class HealthRecord {
 
     public double value;
     public String unit;
+    public String note;
 
     public long timestamp;
 }
