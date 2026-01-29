@@ -10,6 +10,7 @@ import androidx.lifecycle.MediatorLiveData;
 import com.example.medicatiooandhealthtrackerthemain.data.local.entities.HealthRecord;
 import com.example.medicatiooandhealthtrackerthemain.data.local.repository.HealthRepository;
 import com.example.medicatiooandhealthtrackerthemain.data.local.repository.MedicationRepository;
+import com.example.medicatiooandhealthtrackerthemain.utils.SessionManager;
 
 import java.util.Date;
 import java.util.List;
@@ -18,14 +19,15 @@ public class ReportsViewModel extends AndroidViewModel {
 
     private MedicationRepository medicationRepository;
     private HealthRepository healthRepository;
-    private int  currentUserId;
+    private int currentUserId;
 
     public ReportsViewModel(@NonNull Application application) {
         super(application);
         medicationRepository = new MedicationRepository(application);
         healthRepository = new HealthRepository(application);
 
-        currentUserId = 1;
+        SessionManager sessionManager = new SessionManager(application);
+        currentUserId = sessionManager.getUserId();
     }
 
     /**

@@ -20,20 +20,61 @@
         android:entries="@array/health_types"
         android:padding="10dp"/>
 
-    <EditText
-        android:id="@+id/etValue"
+    <!-- Vital Sign Fields -->
+    <LinearLayout
+        android:id="@+id/vitalSignFields"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Value (e.g. 120)"
-        android:inputType="numberDecimal"
-        android:layout_marginTop="15dp"/>
+        android:orientation="vertical"
+        android:visibility="gone">
 
-    <EditText
-        android:id="@+id/etNote"
+        <EditText
+            android:id="@+id/etValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Value (e.g. 120)"
+            android:inputType="numberDecimal"
+            android:layout_marginTop="15dp"/>
+
+        <EditText
+            android:id="@+id/etNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Notes (optional)"
+            android:layout_marginTop="15dp"/>
+    </LinearLayout>
+
+    <!-- Symptom Fields -->
+    <LinearLayout
+        android:id="@+id/symptomFields"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Symptoms or Notes"
-        android:layout_marginTop="15dp"/>
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Describe your symptom"
+            android:inputType="textMultiLine"
+            android:minLines="2"
+            android:layout_marginTop="15dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Severity"
+            android:textSize="16sp"
+            android:layout_marginTop="15dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerSeverity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/severity_levels"
+            android:padding="10dp"/>
+    </LinearLayout>
 
     <Button
         android:id="@+id/btnSaveHealth"

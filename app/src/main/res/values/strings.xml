@@ -4,10 +4,17 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string-array name="health_types">
+        <item>Symptom</item>
         <item>Blood Pressure</item>
         <item>Glucose Level</item>
         <item>Heart Rate</item>
         <item>Weight</item>
+    </string-array>
+
+    <string-array name="severity_levels">
+        <item>Mild</item>
+        <item>Moderate</item>
+        <item>Severe</item>
     </string-array>
 
 
