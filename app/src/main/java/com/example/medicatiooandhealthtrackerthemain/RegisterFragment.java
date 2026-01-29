@@ -1,6 +1,5 @@
 package com.example.medicatiooandhealthtrackerthemain;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,12 +18,11 @@ import com.example.medicatiooandhealthtrackerthemain.data.local.entities.User;
 import com.example.medicatiooandhealthtrackerthemain.utils.AppExecutors;
 import com.example.medicatiooandhealthtrackerthemain.utils.SessionManager;
 
-
 public class RegisterFragment extends Fragment {
 
-    EditText etName, etEmail, etPassword, etConfirmPassword;
+    private EditText etName, etEmail, etPassword, etConfirmPassword;
+    private EditText etBloodType, etAge, etHeight;
 
-    @SuppressLint({"WrongViewCast", "MissingInflatedId"})
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -36,6 +34,10 @@ public class RegisterFragment extends Fragment {
         etEmail = v.findViewById(R.id.etEmail);
         etPassword = v.findViewById(R.id.etPassword);
         etConfirmPassword = v.findViewById(R.id.etConfirmPassword);
+
+        etBloodType = v.findViewById(R.id.etBloodType);
+        etAge = v.findViewById(R.id.etAge);
+        etHeight = v.findViewById(R.id.etHeight);
 
         Button btnRegister = v.findViewById(R.id.btnRegister);
         View tvGoLogin = v.findViewById(R.id.tvGoLogin);
@@ -50,23 +52,42 @@ public class RegisterFragment extends Fragment {
     }
 
     private void doRegister() {
-        String name = etName.getText() == null ? "" : etName.getText().toString().trim();
-        String email = etEmail.getText() == null ? "" : etEmail.getText().toString().trim();
-        String pass = etPassword.getText() == null ? "" : etPassword.getText().toString();
-        String confirm = etConfirmPassword.getText() == null ? "" : etConfirmPassword.getText().toString();
+        String name = txt(etName);
+        String email = txt(etEmail);
+        String pass = txt(etPassword);
+        String confirm = txt(etConfirmPassword);
 
-        // Validation بسيط
+        String blood = txt(etBloodType).toUpperCase();
+        String ageStr = txt(etAge);
+        String heightStr = txt(etHeight);
+
+        // Validation
         if (name.isEmpty()) { etName.setError("Required"); return; }
         if (email.isEmpty()) { etEmail.setError("Required"); return; }
+
+        if (blood.isEmpty()) { etBloodType.setError("Required"); return; }
+        if (!isValidBloodType(blood)) { etBloodType.setError("Use A+, A-, B+, B-, AB+, AB-, O+, O-"); return; }
+
+        Integer age = parseIntOrNull(ageStr);
+        if (age == null) { etAge.setError("Required"); return; }
+        if (age < 1 || age > 120) { etAge.setError("Age must be 1 - 120"); return; }
+
+        Integer height = parseIntOrNull(heightStr);
+        if (height == null) { etHeight.setError("Required"); return; }
+        if (height < 50 || height > 250) { etHeight.setError("Height must be 50 - 250 cm"); return; }
+
         if (pass.isEmpty()) { etPassword.setError("Required"); return; }
+        if (pass.length() < 6) { etPassword.setError("Min 6 chars"); return; }
         if (!pass.equals(confirm)) { etConfirmPassword.setError("Not match"); return; }
 
         AppExecutors.io().execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(requireContext());
+            if (getContext() == null) return;
+
+            AppDatabase db = AppDatabase.getInstance(getContext());
 
             // Check duplicate email
             if (db.userDao().findByEmail(email) != null) {
-                requireActivity().runOnUiThread(() -> etEmail.setError("Email already used"));
+                safeUi(() -> etEmail.setError("Email already used"));
                 return;
             }
 
@@ -74,17 +95,49 @@ public class RegisterFragment extends Fragment {
             u.name = name;
             u.email = email;
             u.password = pass;
+            u.bloodType = blood;
+            u.age = age;
+            u.heightCm = height;
 
             long id = db.userDao().insert(u);
 
-            requireActivity().runOnUiThread(() -> {
-                // Save session
-                new SessionManager(requireContext()).saveUserId((int) id);
+            safeUi(() -> {
+                if (getContext() == null) return;
 
-                // Go Main
-                startActivity(new Intent(requireContext(), MainActivity.class));
-                requireActivity().finish();
+                new SessionManager(getContext()).saveUserId((int) id);
+                startActivity(new Intent(getContext(), MainActivity.class));
+                if (getActivity() != null) getActivity().finish();
             });
         });
+    }
+
+    private void safeUi(Runnable r) {
+        if (!isAdded()) return;//إذا الـ Fragment مش مربوطة بالـ Activity
+        if (getActivity() == null) return;
+        getActivity().runOnUiThread(() -> {
+            if (!isAdded()) return;
+            r.run();
+        });
+    }
+
+    private String txt(EditText e) {
+        return (e.getText() == null) ? "" : e.getText().toString().trim();
+    }
+
+    private Integer parseIntOrNull(String s) {
+        try {
+            if (s == null || s.trim().isEmpty()) return null;
+            return Integer.parseInt(s.trim());
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private boolean isValidBloodType(String b) {
+        // accepted: A+, A-, B+, B-, AB+, AB-, O+, O-
+        return b.equals("A+") || b.equals("A-") ||
+                b.equals("B+") || b.equals("B-") ||
+                b.equals("AB+") || b.equals("AB-") ||
+                b.equals("O+") || b.equals("O-");
     }
 }

@@ -1,6 +1,7 @@
 package com.example.medicatiooandhealthtrackerthemain;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,76 +32,78 @@ public class MedicationLogFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.fragment_medication_log, container, false);
 
-        // 1. إعداد RecyclerView
+        // 1. تعريف العناصر وقاعدة البيانات
         RecyclerView rv = view.findViewById(R.id.rvPendingLogs);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         db = AppDatabase.getInstance(requireContext());
         sessionManager = new SessionManager(requireContext());
+        int userId = sessionManager.getUserId();
 
-        // 2. إعداد الـ Adapter (تعديل الحالة Taken/Missed)
+        // 2. إعداد الـ Adapter مع الأكشن (Taken / Missed)
         adapter = new MedicationLogAdapter(new MedicationLogAdapter.OnLogAction() {
             @Override
             public void onTaken(PendingLogItem item) {
-                updateLogStatus(item.logId, "TAKEN");
+                processLogUpdate(item, "TAKEN");
             }
 
             @Override
             public void onMissed(PendingLogItem item) {
-                updateLogStatus(item.logId, "MISSED");
+                processLogUpdate(item, "MISSED");
             }
         });
         rv.setAdapter(adapter);
 
-        // 3. جلب الـ ID الحقيقي للمستخدم
-        int userId = sessionManager.getUserId();
-
-        // 4. مراقبة البيانات (الالتزام بالـ DAO الخاص بك)
+        // 3. مراقبة البيانات الحية (LiveData)
         db.medicationLogDao().getPendingLogs(userId).observe(getViewLifecycleOwner(), pending -> {
             if (pending != null) {
                 adapter.setItems(pending);
             }
         });
 
-        // 5. توليد بيانات تجريبية (فقط إذا كان المستخدم يملك أدوية)
+        // 4. توليد بيانات تجريبية إذا لزم الأمر
         generateTestDataIfNeeded(userId);
 
         return view;
     }
 
-    private void generateTestDataIfNeeded(int userId) {
+    private void processLogUpdate(PendingLogItem item, String status) {
         Executors.newSingleThreadExecutor().execute(() -> {
-            // جلب أول دواء يملكه المستخدم لربطه بالـ Log
-            // ملاحظة: تأكد من وجود دالة getFirstMedication في MedicationDao
-            var firstMed = db.medicationDao().getById(1); // مثال لربطه بدواء ID = 1
+            long currentTime = System.currentTimeMillis();
 
-            if (firstMed != null) {
-                // التأكد من عدم وجود Log معلق اليوم لهذا الدواء لتجنب التكرار
-                if (db.medicationLogDao().getLastLogForMedication(userId, firstMed.id) == null) {
-                    MedicationLog testLog = new MedicationLog();
-                    testLog.medicationId = firstMed.id;
-                    testLog.userId = userId; // ✅ ضروري جداً لكي ينجح الـ JOIN في الـ DAO
-                    testLog.status = "PENDING";
-                    testLog.timestamp = System.currentTimeMillis();
+            // تحديث حالة السجل في قاعدة البيانات
+            db.medicationLogDao().updateStatus(item.logId, status, currentTime);
+            Log.d("MEDICATION_LOG", "Updated " + item.logId + " to " + status);
 
-                    db.medicationLogDao().insert(testLog);
-                }
+            // إذا أخذ الدواء (TAKEN)، نجعله غير نشط (حسب منطقك)
+            if ("TAKEN".equals(status)) {
+                db.medicationDao().setInactive(item.medicationId);
+            }
+
+            // تحديث الواجهة برسالة بسيطة
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(getContext(), "Status: " + status, Toast.LENGTH_SHORT).show()
+                );
             }
         });
     }
 
-    private void updateLogStatus(int logId, String status) {
+    private void generateTestDataIfNeeded(int userId) {
         Executors.newSingleThreadExecutor().execute(() -> {
-            // استخدام ميثود الـ UPDATE من الـ DAO الخاص بك
-            db.medicationLogDao().updateStatus(logId, status, System.currentTimeMillis());
-
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() ->
-                        Toast.makeText(getContext(), "Status: " + status, Toast.LENGTH_SHORT).show()
-                );
+            // جلب أول دواء موجود للمستخدم لعمل تجربة
+            var firstMed = db.medicationDao().getById(1);
+            if (firstMed != null) {
+                if (db.medicationLogDao().getLastLogForMedication(userId, firstMed.id) == null) {
+                    MedicationLog testLog = new MedicationLog();
+                    testLog.medicationId = firstMed.id;
+                    testLog.userId = userId;
+                    testLog.status = "PENDING";
+                    testLog.timestamp = System.currentTimeMillis();
+                    db.medicationLogDao().insert(testLog);
+                }
             }
         });
     }

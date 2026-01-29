@@ -22,5 +22,7 @@ public interface UserDao {
     @Query("SELECT * FROM users WHERE id = :id LIMIT 1")
     User findById(int id);
 
+    @Query("UPDATE users SET profilePicUri = :uri WHERE id = :id")
+    void updateProfilePic(int id, String uri);
 
 }

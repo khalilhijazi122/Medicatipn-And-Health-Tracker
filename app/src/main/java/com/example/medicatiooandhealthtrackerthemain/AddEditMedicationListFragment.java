@@ -1,7 +1,10 @@
 package com.example.medicatiooandhealthtrackerthemain;
 
+import static com.example.medicatiooandhealthtrackerthemain.data.local.AppDatabase.getInstance;
+
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +22,12 @@ import androidx.room.Room;
 
 import com.example.medicatiooandhealthtrackerthemain.data.local.AppDatabase;
 import com.example.medicatiooandhealthtrackerthemain.data.local.entities.Medication;
+import com.example.medicatiooandhealthtrackerthemain.data.local.entities.MedicationLog;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,7 +45,8 @@ public class AddEditMedicationListFragment extends Fragment {
     private int editMedId = -1;
     private com.example.medicatiooandhealthtrackerthemain.utils.SessionManager sessionManager;
 
-    public AddEditMedicationListFragment() { }
+    public AddEditMedicationListFragment() {
+    }
 
     @Nullable
     @Override
@@ -57,11 +66,10 @@ public class AddEditMedicationListFragment extends Fragment {
         btnSave = view.findViewById(R.id.btnSave);
 
         // DB (basic)
-//        db = Room.databaseBuilder(requireContext(), AppDatabase.class, "medication_db")
-//                .fallbackToDestructiveMigration()
-//                .allowMainThreadQueries() // مؤقتاً للتعلم
-//                .build();
+
         db = AppDatabase.getInstance(requireContext());
+
+
 
 
         // Check bundle
@@ -127,24 +135,20 @@ public class AddEditMedicationListFragment extends Fragment {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         executor.execute(() -> {
+            long medId;
 
+            // داخل executor.execute في دالة saveMedication
             if (isEdit) {
-                // ✅ مهم جداً: ضع id للدواء قبل update
                 med.id = editMedId;
 
-                // ✅ مهم جداً: حافظ على userId الحقيقي من الدواء القديم
                 Medication old = db.medicationDao().getById(editMedId);
-                if (old != null) {
-                    med.userId = old.userId;
-                } else {
-                    med.userId = 1; // fallback
-                }
-
+                med.userId = (old != null) ? old.userId : sessionManager.getUserId();
                 db.medicationDao().update(med);
-
             } else {
-                med.userId = sessionManager.getUserId(); // ✅ استخدم الديناميكي
-                db.medicationDao().insert(med);
+
+                med.userId = sessionManager.getUserId();
+                medId = db.medicationDao().insert(med);
+                createPendingLogForToday(medId, med.userId, hour, minute);
             }
 
             if (!isAdded()) return;
@@ -154,6 +158,37 @@ public class AddEditMedicationListFragment extends Fragment {
                 NavHostFragment.findNavController(this).popBackStack();
             });
         });
+    }
+
+    /**
+     * Creates a PENDING medication log for today's scheduled time
+     */
+    private void createPendingLogForToday(long medicationId, int userId, int hour, int minute) {
+        // Get today's date at the scheduled time
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, minute);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        long scheduledTime = cal.getTimeInMillis();
+        long now = System.currentTimeMillis();
+
+        // Only create log if the scheduled time hasn't passed yet today
+        if (scheduledTime > now) {
+            MedicationLog log = new MedicationLog();
+            log.userId = userId;
+            log.medicationId = (int) medicationId;
+            log.timestamp = scheduledTime;
+            log.status = "PENDING";
+
+            long logId = db.medicationLogDao().insert(log);
+
+            Log.d("ADD_MEDICATION", "Created PENDING log ID: " + logId +
+                    " for time: " + new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(scheduledTime)));
+        } else {
+            Log.d("ADD_MEDICATION", "Scheduled time already passed today, no log created");
+        }
     }
 
     private int parseIntSafe(String s) {

@@ -3,21 +3,19 @@ package com.example.medicatiooandhealthtrackerthemain;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import androidx.room.Room;
 
 import com.example.medicatiooandhealthtrackerthemain.data.local.AppDatabase;
 import com.example.medicatiooandhealthtrackerthemain.data.local.entities.Medication;
 import com.example.medicatiooandhealthtrackerthemain.data.local.entities.MedicationLog;
-import com.example.medicatiooandhealthtrackerthemain.data.local.entities.User;
 import com.example.medicatiooandhealthtrackerthemain.utils.Prefs;
+import com.example.medicatiooandhealthtrackerthemain.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Calendar;
@@ -26,10 +24,16 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
-    AppDatabase db;
+    private AppDatabase db;
+    private SessionManager sessionManager;
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable checkerRunnable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // إعداد الوضع الليلي
         if (Prefs.isDarkMode(this)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
@@ -38,88 +42,64 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        // إعداد Navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-
-        AppBarConfiguration appBarConfiguration =
-                new AppBarConfiguration.Builder(R.id.DashboardFragment,
-                        R.id.MedicationListFragment,R.id.MedicationLogFragment
-                        ,R.id.ReportFragment,R.id.ProfileFragment).build();
-       // NavHostFragment navHostFragment =
-             //   (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
-
-        //if (navHostFragment == null) {
-           // throw new RuntimeException("nav_host_fragment not found in activity_main.xml");
-       // }
-
-       NavController navController;
-        navController = Navigation.findNavController(MainActivity.this,R.id.nav_host_fragment);
-
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(bottomNav, navController);
-        User u = new User();
-         // أو autoGenerate حسب تعريفك
-        u.name = "test";
 
-        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "medication_db")
-                .fallbackToDestructiveMigration()
-                .allowMainThreadQueries() // مؤقتاً للتعلم
-                .build();
+        // إعداد الداتابيز والـ Session
+        db = AppDatabase.getInstance(this);
+        sessionManager = new SessionManager(this);
 
-        startDueChecker(db);
-
-
-
-
-        new Thread(() -> {
-            db.userDao().insert(u);
-        }).start();
-
-
+        // تشغيل فاحص المواعيد
+        startDueChecker();
     }
 
-    private final int USER_ID = 1;
-    private Handler handler = new Handler(Looper.getMainLooper());
-    private Runnable checkerRunnable;
-
-    private void startDueChecker(AppDatabase db) {
+    private void startDueChecker() {
         checkerRunnable = new Runnable() {
             @Override
             public void run() {
-                Executors.newSingleThreadExecutor().execute(() -> {
-                    checkDueMedications(db, USER_ID);
-                });
-                handler.postDelayed(this, 30_000); // كل 30 ثانية
+                int userId = sessionManager.getUserId();
+                if (userId != -1) {
+                    Executors.newSingleThreadExecutor().execute(() -> {
+                        checkDueMedications(userId);
+                    });
+                }
+                handler.postDelayed(this, 30_000); // فحص كل 30 ثانية
             }
         };
         handler.post(checkerRunnable);
     }
 
-    private void stopDueChecker() {
-        if (checkerRunnable != null) handler.removeCallbacks(checkerRunnable);
-    }
-
-    private void checkDueMedications(AppDatabase db, int userId) {
-        List<Medication> meds = db.medicationDao().getActiveMedications(userId);
+    private void checkDueMedications(int userId) {
+        // جلب الأدوية النشطة للمستخدم الحالي فقط
+        List<Medication> meds = db.medicationDao().getActiveMedicationsSync(userId);
 
         Calendar now = Calendar.getInstance();
-        int h = now.get(Calendar.HOUR_OF_DAY);
-        int m = now.get(Calendar.MINUTE);
+        int currentH = now.get(Calendar.HOUR_OF_DAY);
+        int currentM = now.get(Calendar.MINUTE);
 
         long startDay = getStartOfDayMillis();
         long endDay = getEndOfDayMillis();
 
         for (Medication med : meds) {
-            if (med.hour == h && med.minute == m) {
+            // إذا تطابق الوقت (ساعة ودقيقة)
+            if (med.hour == currentH && med.minute == currentM) {
 
-                int already = db.medicationLogDao().countPendingToday(userId, med.id, startDay, endDay);
-                if (already > 0) continue;
+                // التأكد من عدم وجود Log مسجل مسبقاً لهذا الدواء اليوم
+                int already = db.medicationLogDao().countStatusForMedicationBetween(
+                        userId, med.id, "PENDING", startDay, endDay);
 
-                MedicationLog log = new MedicationLog();
-                log.userId = userId;
-                log.medicationId = med.id;
-                log.timestamp = System.currentTimeMillis();
-                log.status = "PENDING";
+                if (already == 0) {
+                    MedicationLog log = new MedicationLog();
+                    log.userId = userId;
+                    log.medicationId = med.id;
+                    log.timestamp = System.currentTimeMillis();
+                    log.status = "PENDING";
 
-                db.medicationLogDao().insert(log);
+                    db.medicationLogDao().insert(log);
+                    Log.d("Checker", "Created pending log for: " + med.name);
+                }
             }
         }
     }
@@ -145,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopDueChecker();
+        if (checkerRunnable != null) handler.removeCallbacks(checkerRunnable);
     }
-
 }

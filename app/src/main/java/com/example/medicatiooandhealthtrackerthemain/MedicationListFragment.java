@@ -1,5 +1,7 @@
 package com.example.medicatiooandhealthtrackerthemain;
 
+import static com.example.medicatiooandhealthtrackerthemain.data.local.AppDatabase.getInstance;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -49,10 +51,6 @@ public class MedicationListFragment extends Fragment implements ConfirmDeleteDia
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         // DB
-//        db = Room.databaseBuilder(requireContext(), AppDatabase.class, "medication_db")
-//                .fallbackToDestructiveMigration()
-//                .allowMainThreadQueries() // مؤقتاً للتعلم
-//                .build();
 
         db = AppDatabase.getInstance(requireContext());
 
@@ -82,7 +80,7 @@ public class MedicationListFragment extends Fragment implements ConfirmDeleteDia
 
      rv.setAdapter(adapter);
 
-        db.medicationDao().getActiveMedicationsLive(1)
+        db.medicationDao().getActiveMedications(1)
                 .observe(getViewLifecycleOwner(), meds -> adapter.setItems(meds));
 
 

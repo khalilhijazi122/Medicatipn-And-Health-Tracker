@@ -72,5 +72,7 @@ public class MedicationLogAdapter extends RecyclerView.Adapter<MedicationLogAdap
             btnTaken = itemView.findViewById(R.id.btnTaken);
             btnMissed = itemView.findViewById(R.id.btnMissed);
         }
+
+
     }
 }
